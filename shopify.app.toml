@@ -1,5 +1,3 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "82eced5aa9bfae29ddbed3423bf2031e"
 name = "Floating Menu 2026"
 application_url = "https://floating-menu-app.onrender.com/"
@@ -9,22 +7,23 @@ embedded = true
 automatically_update_urls_on_dev = true
 include_config_on_deploy = true
 
-[webhooks]
-api_version = "2026-04"
-
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = ""
 
 [auth]
 redirect_urls = [ "https://floating-menu-app.onrender.com/api/auth/callback" ]
+
 [webhooks]
-api_version = "2026-04"
+api_version = "2024-10"
 
 [[webhooks.subscriptions]]
-uri = "/api/webhooks"
+topics = [ "app/uninstalled" ]
+uri = "https://floating-menu-app.onrender.com/api/webhooks"
+
+[[webhooks.subscriptions]]
 compliance_topics = [
   "customers/data_request",
   "customers/redact",
   "shop/redact"
 ]
+uri = "https://floating-menu-app.onrender.com/api/webhooks"
