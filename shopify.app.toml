@@ -1,5 +1,3 @@
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "82eced5aa9bfae29ddbed3423bf2031e"
 name = "Floating Menu 2026"
 handle = "floating-menu-2026"
@@ -10,7 +8,6 @@ embedded = true
 automatically_update_urls_on_dev = true
 
 [access_scopes]
-# Add any other scopes your app needs here (e.g., read_themes)
 scopes = "read_products,write_products"
 
 [auth]
@@ -25,7 +22,6 @@ api_version = "2024-04"
   topics = [ "app/uninstalled" ]
   uri = "/api/webhooks"
 
-  # MANDATORY PRIVACY WEBHOOKS (Reduces Red X failures)
   [[webhooks.subscriptions]]
   topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
   uri = "/api/webhooks"
