@@ -1,0 +1,284 @@
+{% comment %}
+  Floating Menu App Embed Block
+{% endcomment %}
+
+<style>
+  /* 1. HIDE DEFAULT CHAT ELEMENTS ON MOBILE */
+  @media screen and (max-width: 768px) {
+    #shopify-chat, inbox-online-store-chat, #dummy-chat-button-iframe, .shopify-chat {
+      display: none !important;
+    }
+  }
+
+  /* 2. MASTER CONTAINER & TYPOGRAPHY */
+  .pf-nav-container {
+    display: none; /* Hides on desktop */
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999999;
+    width: calc(100% - 40px);
+    max-width: 420px;
+    pointer-events: none;
+    font-family: inherit !important;
+  }
+
+  /* Standardized Text Styles for all elements connected to App Settings */
+  .pf-nav-label, 
+  .pf-menu-item, 
+  .pf-back-btn,
+  .pf-menu-title,
+  .pf-menu-item a {
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: {{ block.settings.text_color }} !important;
+    line-height: 1.2 !important;
+    margin: 0;
+    text-decoration: none;
+  }
+
+  /* 3. MAIN EXPANDING CONTAINER (PARENT) */
+  .pf-menu-outer {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 12px;
+    height: 60vh;
+    background: transparent;
+    border-radius: 28px;
+    overflow: hidden;
+    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    isolation: isolate;
+  }
+
+  .pf-menu-outer.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  /* 4. STACKING PANELS (Connected to App Settings) */
+  .pf-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: {{ block.settings.bg_color }}; 
+    opacity: 0.98;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 16px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 10;
+  }
+
+  #panel-main {
+    transform: translateX(0);
+    z-index: 5;
+  }
+
+  .pf-panel.is-active {
+    transform: translateX(0);
+    z-index: 20;
+  }
+
+  /* 5. MENU ITEMS */
+  .pf-menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pf-menu-item:active { background: rgba(0, 0, 0, 0.05); }
+
+  .pf-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    width: 100%;
+    margin-bottom: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .pf-icon-arrow { width: 18px; height: 18px; opacity: 0.4; color: {{ block.settings.text_color }}; }
+
+  /* 6. MAIN PILL BAR */
+  .pf-nav-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: {{ block.settings.bg_color }}; 
+    opacity: 0.95;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 100px;
+    padding: 14px 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: auto;
+    cursor: pointer;
+    width: 100%;
+    gap: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Shows only on mobile */
+  @media screen and (max-width: 768px) { .pf-nav-container { display: block; } }
+</style>
+
+<div class="pf-nav-container">
+  <div class="pf-menu-outer" id="pfNavMenu">
+    
+    <div class="pf-panel" id="panel-main">
+      <div class="pf-menu-title" style="padding: 0 0 12px 16px; opacity: 0.4; font-size: 11px !important;">{{ block.settings.button_text }}</div>
+      {% for link in block.settings.menu.links %}
+        {% if link.links != blank %}
+          <button class="pf-menu-item" data-target="submenu-{{ link.handle }}" onclick="openSubmenu(this)">
+            {{ link.title }}
+            <svg class="pf-icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        {% else %}
+          <a href="{{ link.url }}" class="pf-menu-item">{{ link.title }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% for link in block.settings.menu.links %}
+      {% if link.links != blank %}
+        <div class="pf-panel" id="submenu-{{ link.handle }}">
+          <button class="pf-back-btn" onclick="closeSubmenu('submenu-{{ link.handle }}')">← Back</button>
+          {% for child_link in link.links %}
+            {% if child_link.links != blank %}
+              <button class="pf-menu-item" data-target="submenu-{{ child_link.handle }}" onclick="openSubmenu(this)">
+                {{ child_link.title }}
+                <svg class="pf-icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            {% else %}
+              <a href="{{ child_link.url }}" class="pf-menu-item">{{ child_link.title }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% for child_link in link.links %}
+          {% if child_link.links != blank %}
+            <div class="pf-panel" id="submenu-{{ child_link.handle }}">
+              <button class="pf-back-btn" onclick="closeSubmenu('submenu-{{ child_link.handle }}')">← Back to {{ link.title }}</button>
+              {% for grandchild_link in child_link.links %}
+                <a href="{{ grandchild_link.url }}" class="pf-menu-item">{{ grandchild_link.title }}</a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+
+  </div>
+
+  <button class="pf-nav-bar" onclick="togglePFMenu()" aria-label="Toggle Menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ block.settings.text_color }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+    <span class="pf-nav-label">{{ block.settings.button_text }}</span>
+  </button>
+</div>
+
+<script>
+  const menuOuter = document.getElementById('pfNavMenu');
+
+  function togglePFMenu() {
+    menuOuter.classList.toggle('is-open');
+    if (!menuOuter.classList.contains('is-open')) {
+      setTimeout(() => {
+        document.querySelectorAll('.pf-panel').forEach(p => {
+          if (p.id !== 'panel-main') p.classList.remove('is-active');
+        });
+      }, 400);
+    }
+  }
+
+  function openSubmenu(button) {
+    const targetId = button.getAttribute('data-target');
+    const targetPanel = document.getElementById(targetId);
+    if (targetPanel) {
+      targetPanel.classList.add('is-active');
+      targetPanel.scrollTop = 0;
+    }
+  }
+
+  function closeSubmenu(panelId) {
+    const panel = document.getElementById(panelId);
+    if (panel) {
+      panel.classList.remove('is-active');
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    const container = document.querySelector('.pf-nav-container');
+    if (container && !container.contains(e.target) && menuOuter.classList.contains('is-open')) {
+      togglePFMenu();
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "PF Menu Final",
+  "target": "body",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Select Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Label",
+      "default": "EXPLORE MENU"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#CCC9C9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text & Icon Color",
+      "default": "#121212"
+    }
+  ]
+}
+{% endschema %}
